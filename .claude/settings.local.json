@@ -2,7 +2,9 @@
   "permissions": {
     "allow": [
       "WebFetch(domain:www.npmjs.com)",
-      "Bash(node:*)"
+      "Bash(node:*)",
+      "Bash(npm link:*)",
+      "Bash(convert-csv-to-qti:*)"
     ],
     "deny": []
   }

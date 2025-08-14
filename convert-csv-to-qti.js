@@ -21,6 +21,7 @@ const sanitize = require("sanitize-filename");
  * 6: choiceB   -> varsa B seçeneği metni (opsiyonel)
  * 7: choiceC
  * 8: choiceD
+ * 9: title     -> soru başlığı (opsiyonel, yoksa identifier kullanılır)
  *
  * Eğer 5–8 boşsa A–D olarak label basar; prompt içindeki görsel soruyu temsil eder.
  */
@@ -47,7 +48,7 @@ function replaceImageSrc(html, newSrc) {
   return html.replace(/(<img[^>]+src=["'])([^"']+)(["'])/i, `$1${newSrc}$3`);
 }
 
-function buildAssessmentItemXml({ identifier, title, points, promptHtml, correct }) {
+function buildAssessmentItemXml({ identifier, title, points, promptHtml, correct, shuffle = false, maxChoices = 1 }) {
   const doc = create({ version: "1.0", encoding: "utf-8" })
     .ele("assessmentItem", {
       xmlns: QTI_NS,
@@ -63,7 +64,7 @@ function buildAssessmentItemXml({ identifier, title, points, promptHtml, correct
       .ele("defaultValue").ele("value").txt(String(points)).up().up()
     .up()
     .ele("itemBody")
-      .ele("choiceInteraction", { responseIdentifier: "RESPONSE", shuffle: "false", maxChoices: "1" })
+      .ele("choiceInteraction", { responseIdentifier: "RESPONSE", shuffle: String(shuffle), maxChoices: String(maxChoices) })
         .ele("prompt").dat(promptHtml).up()
         .ele("simpleChoice", { identifier: "A" }).txt("A").up()
         .ele("simpleChoice", { identifier: "B" }).txt("B").up()
@@ -79,10 +80,10 @@ function buildAssessmentItemXml({ identifier, title, points, promptHtml, correct
   return doc.end({ prettyPrint: true });
 }
 
-function buildAssessmentTestXml(testId, title, itemRefs) {
+function buildAssessmentTestXml(testId, title, itemRefs, navigationMode = "nonlinear", submissionMode = "individual") {
   const doc = create({ version: "1.0", encoding: "utf-8" })
     .ele("assessmentTest", { xmlns: QTI_NS, identifier: testId, title })
-      .ele("testPart", { identifier: "part1", navigationMode: "nonlinear", submissionMode: "individual" })
+      .ele("testPart", { identifier: "part1", navigationMode, submissionMode })
         .ele("assessmentSection", { identifier: "section1", title: "Bölüm 1", visible: "true" });
 
   const section = doc;
@@ -142,6 +143,11 @@ async function main() {
     .option("title", { type: "string", default: "CSV’den Aktarılan Havuz", desc: "Test başlığı" })
     .option("download-images", { type: "boolean", default: false, desc: "Görselleri ZIP içine indir ve kaynakları yerelleştir" })
     .option("media-dir", { type: "string", default: "media", desc: "ZIP içindeki medya klasörü" })
+    .option("test-id", { type: "string", desc: "Test ID (varsayılan: otomatik oluşturulur)" })
+    .option("navigation-mode", { type: "string", default: "nonlinear", choices: ["linear", "nonlinear"], desc: "Navigasyon modu" })
+    .option("submission-mode", { type: "string", default: "individual", choices: ["individual", "simultaneous"], desc: "Gönderim modu" })
+    .option("shuffle", { type: "boolean", default: false, desc: "Seçenekleri karıştır" })
+    .option("max-choices", { type: "number", default: 1, desc: "Maksimum seçim sayısı" })
     .help()
     .argv;
 
@@ -181,7 +187,7 @@ async function main() {
   const zip = Archiver("zip", { zlib: { level: 9 } });
   zip.pipe(outStream);
 
-  const testId = "TEST-" + Math.random().toString(36).slice(2, 10).toUpperCase();
+  const testId = argv["test-id"] || ("TEST-" + Math.random().toString(36).slice(2, 10).toUpperCase());
   const testHref = "assessmentTest.xml";
   const itemRefs = [];
   const itemsXml = [];
@@ -210,6 +216,9 @@ async function main() {
     let correct = (r[4] || "A").toString().trim().toUpperCase();
     if (!["A", "B", "C", "D"].includes(correct)) correct = "A";
 
+    // Soru başlığı (9. sütun varsa kullan, yoksa identifier)
+    const questionTitle = (r[9] || identifier).toString().trim();
+
     // Görsel gömme opsiyonu
     if (willEmbed) {
       try {
@@ -237,10 +246,12 @@ async function main() {
 
     const itemXml = buildAssessmentItemXml({
       identifier,
-      title: identifier,
+      title: questionTitle,
       points,
       promptHtml,
-      correct
+      correct,
+      shuffle: argv.shuffle,
+      maxChoices: argv["max-choices"]
     });
 
     const itemFile = `${identifier}.xml`;
@@ -258,7 +269,7 @@ async function main() {
   }
 
   // assessmentTest.xml
-  const testXml = buildAssessmentTestXml(testId, argv.title, itemRefs);
+  const testXml = buildAssessmentTestXml(testId, argv.title, itemRefs, argv["navigation-mode"], argv["submission-mode"]);
 
   // imsmanifest.xml
   const manifestXml = buildManifestXml(
