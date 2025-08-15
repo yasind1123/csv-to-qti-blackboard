@@ -4,7 +4,13 @@
   "description": "Convert semicolon-delimited CSV to QTI 2.1 package for Blackboard (pool import).",
   "main": "convert-csv-to-qti.js",
   "bin": {
-    "convert-csv-to-qti": "./convert-csv-to-qti.js"
+    "convert-csv-to-qti": "convert-csv-to-qti.js"
+  },
+  "keywords": ["csv", "qti", "blackboard", "assessment", "quiz", "converter", "non prod"],
+  "author": "Yasin Demir <ysn47@galatasaray.net>",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yasind1123/csv-to-qti-package.git"
   },
   "license": "MIT",
   "dependencies": {
