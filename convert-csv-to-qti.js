@@ -58,19 +58,19 @@ function buildAssessmentItemXml({ identifier, title, points, promptHtml, correct
       timeDependent: "false"
     })
     .ele("responseDeclaration", { identifier: "RESPONSE", cardinality: "single", baseType: "identifier" })
-      .ele("correctResponse").ele("value").txt(correct).up().up()
+    .ele("correctResponse").ele("value").txt(correct).up().up()
     .up()
     .ele("outcomeDeclaration", { identifier: "SCORE", cardinality: "single", baseType: "float" })
-      .ele("defaultValue").ele("value").txt(String(points)).up().up()
+    .ele("defaultValue").ele("value").txt(String(points)).up().up()
     .up()
     .ele("itemBody")
-      .ele("choiceInteraction", { responseIdentifier: "RESPONSE", shuffle: String(shuffle), maxChoices: String(maxChoices) })
-        .ele("prompt").dat(promptHtml).up()
-        .ele("simpleChoice", { identifier: "A" }).txt("A").up()
-        .ele("simpleChoice", { identifier: "B" }).txt("B").up()
-        .ele("simpleChoice", { identifier: "C" }).txt("C").up()
-        .ele("simpleChoice", { identifier: "D" }).txt("D").up()
-      .up()
+    .ele("choiceInteraction", { responseIdentifier: "RESPONSE", shuffle: String(shuffle), maxChoices: String(maxChoices) })
+    .ele("prompt").dat(promptHtml).up()
+    .ele("simpleChoice", { identifier: "A" }).txt("A").up()
+    .ele("simpleChoice", { identifier: "B" }).txt("B").up()
+    .ele("simpleChoice", { identifier: "C" }).txt("C").up()
+    .ele("simpleChoice", { identifier: "D" }).txt("D").up()
+    .up()
     .up()
     .ele("responseProcessing", {
       template: "http://www.imsglobal.org/question/qti_v2p1/rptemplates/match_correct"
@@ -83,8 +83,8 @@ function buildAssessmentItemXml({ identifier, title, points, promptHtml, correct
 function buildAssessmentTestXml(testId, title, itemRefs, navigationMode = "nonlinear", submissionMode = "individual") {
   const doc = create({ version: "1.0", encoding: "utf-8" })
     .ele("assessmentTest", { xmlns: QTI_NS, identifier: testId, title })
-      .ele("testPart", { identifier: "part1", navigationMode, submissionMode })
-        .ele("assessmentSection", { identifier: "section1", title: "Bölüm 1", visible: "true" });
+    .ele("testPart", { identifier: "part1", navigationMode, submissionMode })
+    .ele("assessmentSection", { identifier: "section1", title: "Bölüm 1", visible: "true" });
 
   const section = doc;
   itemRefs.forEach(({ refId, href }) => {
@@ -103,8 +103,8 @@ function buildManifestXml(testRes, itemResList) {
       identifier: `MANIFEST-${Math.random().toString(36).slice(2, 10)}`,
       "xsi:schemaLocation": `${IMSCP_NS} http://www.imsglobal.org/xsd/imscp_v1p1.xsd ${QTI_NS} http://www.imsglobal.org/xsd/imsqti_v2p1.xsd`
     })
-      .ele("organizations").up()
-      .ele("resources");
+    .ele("organizations").up()
+    .ele("resources");
 
   // Test resource
   const r = doc.ele("resource", {
