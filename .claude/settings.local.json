@@ -4,7 +4,12 @@
       "WebFetch(domain:www.npmjs.com)",
       "Bash(node:*)",
       "Bash(npm link:*)",
-      "Bash(convert-csv-to-qti:*)"
+      "Bash(convert-csv-to-qti:*)",
+      "Bash(mkdir:*)",
+      "Bash(unzip:*)",
+      "Bash(ls:*)",
+      "Bash(echo:*)",
+      "Bash(rm:*)"
     ],
     "deny": []
   }

@@ -49,35 +49,32 @@ function replaceImageSrc(html, newSrc) {
 }
 
 function buildAssessmentItemXml({ identifier, title, points, promptHtml, correct, shuffle = false, maxChoices = 1 }) {
-  const doc = create({ version: "1.0", encoding: "utf-8" })
-    .ele("assessmentItem", {
-      xmlns: QTI_NS,
-      identifier,
-      title,
-      adaptive: "false",
-      timeDependent: "false"
-    })
-    .ele("responseDeclaration", { identifier: "RESPONSE", cardinality: "single", baseType: "identifier" })
-    .ele("correctResponse").ele("value").txt(correct).up().up()
-    .up()
-    .ele("outcomeDeclaration", { identifier: "SCORE", cardinality: "single", baseType: "float" })
-    .ele("defaultValue").ele("value").txt(String(points)).up().up()
-    .up()
-    .ele("itemBody")
-    .ele("choiceInteraction", { responseIdentifier: "RESPONSE", shuffle: String(shuffle), maxChoices: String(maxChoices) })
-    .ele("prompt").dat(promptHtml).up()
-    .ele("simpleChoice", { identifier: "A" }).txt("A").up()
-    .ele("simpleChoice", { identifier: "B" }).txt("B").up()
-    .ele("simpleChoice", { identifier: "C" }).txt("C").up()
-    .ele("simpleChoice", { identifier: "D" }).txt("D").up()
-    .up()
-    .up()
-    .ele("responseProcessing", {
-      template: "http://www.imsglobal.org/question/qti_v2p1/rptemplates/match_correct"
-    })
-    .up();
-
-  return doc.end({ prettyPrint: true });
+  // Manually construct the XML to have better control over HTML content
+  const xmlString = `<?xml version="1.0" encoding="utf-8"?>
+<assessmentItem xmlns="${QTI_NS}" identifier="${identifier}" title="${title}" adaptive="false" timeDependent="false">
+  <responseDeclaration identifier="RESPONSE" cardinality="single" baseType="identifier">
+    <correctResponse>
+      <value>${correct}</value>
+    </correctResponse>
+  </responseDeclaration>
+  <outcomeDeclaration identifier="SCORE" cardinality="single" baseType="float">
+    <defaultValue>
+      <value>${points}</value>
+    </defaultValue>
+  </outcomeDeclaration>
+  <itemBody>
+    <choiceInteraction responseIdentifier="RESPONSE" shuffle="${shuffle}" maxChoices="${maxChoices}">
+      <prompt>${promptHtml}</prompt>
+      <simpleChoice identifier="A">A</simpleChoice>
+      <simpleChoice identifier="B">B</simpleChoice>
+      <simpleChoice identifier="C">C</simpleChoice>
+      <simpleChoice identifier="D">D</simpleChoice>
+    </choiceInteraction>
+  </itemBody>
+  <responseProcessing template="http://www.imsglobal.org/question/qti_v2p1/rptemplates/match_correct"/>
+</assessmentItem>`;
+  
+  return xmlString;
 }
 
 function buildAssessmentTestXml(testId, title, itemRefs, navigationMode = "nonlinear", submissionMode = "individual") {
