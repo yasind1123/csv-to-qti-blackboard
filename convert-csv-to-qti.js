@@ -291,7 +291,21 @@ async function main() {
   console.log("QTI paket hazır:", outputZip);
 }
 
-main().catch(err => {
-  console.error(err);
-  process.exit(1);
-});
+// CLI çalıştırma - sadece doğrudan çalıştırıldığında
+if (require.main === module) {
+  main().catch(err => {
+    console.error(err);
+    process.exit(1);
+  });
+}
+
+// API kullanımı için fonksiyonları export et
+module.exports = {
+  cleanHtmlPrompt,
+  extractFirstImageUrl,
+  replaceImageSrc,
+  buildAssessmentItemXml,
+  buildAssessmentTestXml,
+  buildManifestXml,
+  downloadToBuffer
+};

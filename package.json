@@ -1,8 +1,12 @@
 {
   "name": "csv-to-qti-blackboard",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "Convert semicolon-delimited CSV to QTI 2.1 package for Blackboard (pool import).",
   "main": "convert-csv-to-qti.js",
+  "exports": {
+    ".": "./convert-csv-to-qti.js",
+    "./api": "./lib/api.js"
+  },
   "bin": {
     "convert-csv-to-qti": "convert-csv-to-qti.js",
     "csv-to-qti-blackboard": "convert-csv-to-qti.js"

@@ -1,6 +1,8 @@
 # CSV to QTI Blackboard Converter
 
-Convert semicolon-delimited CSV files containing multiple choice questions into QTI 2.1 packages for Blackboard import.
+Convert semicolon-delimited CSV files containing multiple choice questions into QTI 2.1 packages for Blackboard import. 
+
+**Now supports both CLI and Backend API usage!**
 
 ## Installation
 
@@ -14,6 +16,8 @@ npm install csv-to-qti-blackboard
 ```
 
 ## Usage
+
+### CLI Usage (Command Line)
 
 The tool provides two equivalent command names:
 
@@ -53,6 +57,61 @@ convert-csv-to-qti questions.csv test.zip --title="Math Test" --download-images
 csv-to-qti-blackboard questions.csv test.zip --shuffle --title="Quiz 1"
 ```
 
+### Backend API Usage (Node.js)
+
+For backend applications, you can use the package programmatically:
+
+```javascript
+const { convertCsvToQtiBuffer, convertRowsToQtiBuffer } = require('csv-to-qti-blackboard/api');
+
+// Convert CSV string to QTI Buffer
+async function convertCsv() {
+  const csvData = `MC;Q1;10;What is 2+2?;A;4;3;5;6;Math Question`;
+  
+  const qtiBuffer = await convertCsvToQtiBuffer(csvData, {
+    title: 'Backend Test',
+    downloadImages: true,
+    mediaDir: 'images'
+  });
+  
+  // Use buffer (save to file, send as HTTP response, etc.)
+  return qtiBuffer;
+}
+
+// Express.js example
+app.post('/convert-csv', async (req, res) => {
+  try {
+    const qtiBuffer = await convertCsvToQtiBuffer(req.body.csvData, {
+      title: req.body.title || 'Converted Quiz',
+      downloadImages: req.body.downloadImages || false
+    });
+    
+    res.setHeader('Content-Type', 'application/zip');
+    res.setHeader('Content-Disposition', 'attachment; filename="quiz.zip"');
+    res.send(qtiBuffer);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
+
+// Using with row arrays
+const rows = [
+  ['MC', 'Q1', '10', 'Question 1?', 'A', 'A', 'B', 'C', 'D', 'Title 1'],
+  ['MC', 'Q2', '15', 'Question 2?', 'B', 'A', 'B', 'C', 'D', 'Title 2']
+];
+
+const qtiBuffer = await convertRowsToQtiBuffer(rows, {
+  title: 'Array Test'
+});
+```
+
+#### API Functions
+
+- **`convertCsvToQtiBuffer(csvString, options)`**: Convert CSV string to QTI ZIP buffer
+- **`convertRowsToQtiBuffer(rows, options)`**: Convert array of rows to QTI ZIP buffer
+
+Both functions accept the same options as CLI (title, downloadImages, mediaDir, etc.).
+
 ## CSV Format
 
 The tool expects semicolon-delimited CSV with these columns:
@@ -80,6 +139,8 @@ MC;76067;10;<img src="https://example.com/image2.png">;D;A;B;C;D
 - ✅ **Blackboard Compatible**: Tested with Blackboard Learn
 - ✅ **UTF-8 Support**: Handles Turkish and other international characters
 - ✅ **Flexible Options**: Customizable navigation, shuffling, and scoring
+- ✅ **Backend API**: Use programmatically in Node.js applications
+- ✅ **Memory Efficient**: Backend API returns buffers without file I/O
 
 ## Generated Package Structure
 
